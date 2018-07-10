@@ -7,11 +7,11 @@ use OpenTracing\Span;
 use OpenTracing\Tracer;
 use Memcached;
 
-use const OpenTracing\Ext\Tags\COMPONENT;
-use const OpenTracing\Ext\Tags\DATABASE_TYPE;
-use const OpenTracing\Ext\Tags\DATABASE_STATEMENT;
-use const OpenTracing\Ext\Tags\SPAN_KIND;
-use const OpenTracing\Ext\Tags\SPAN_KIND_RPC_CLIENT;
+use const OpenTracing\Tags\COMPONENT;
+use const OpenTracing\Tags\DATABASE_TYPE;
+use const OpenTracing\Tags\DATABASE_STATEMENT;
+use const OpenTracing\Tags\SPAN_KIND;
+use const OpenTracing\Tags\SPAN_KIND_RPC_CLIENT;
 
 class TracingMemcacheClient extends Memcached
 {
@@ -49,7 +49,7 @@ class TracingMemcacheClient extends Memcached
 
         $response = $callable();
 
-        $span->finish();
+        $span->close();
 
         return $response;
     }
@@ -59,42 +59,42 @@ class TracingMemcacheClient extends Memcached
         return $this->tracePrefix . '/' . $operationName;
     }
 
-    public function get($key, callable $cache_cb = null, &$cas_token = null)
+    public function get($key, $cache_cb = null, $flags = null)
     {
-        return $this->withSpan(__FUNCTION__, function () use ($key, $cache_cb, $cas_token) {
-            return parent::get($key, $cache_cb, $cas_token);
+        return $this->withSpan(__FUNCTION__, function () use ($key, $cache_cb, $flags) {
+            return parent::get($key, $cache_cb, $flags);
         });
     }
 
-    public function getByKey($server_key, $key, callable $cache_cb = null, &$cas_token = null)
+    public function getByKey($server_key, $key, $cache_cb = null, $flags = null)
     {
-        return $this->withSpan(__FUNCTION__, function () use ($server_key, $key, $cache_cb, $cas_token) {
-            return parent::getByKey($server_key, $key, $cache_cb, $cas_token);
+        return $this->withSpan(__FUNCTION__, function () use ($server_key, $key, $cache_cb, $flags) {
+            return parent::getByKey($server_key, $key, $cache_cb, $flags);
         });
     }
 
-    public function getMulti(array $keys, array &$cas_tokens = null, $flags = null)
+    public function getMulti(array $keys, $flags = null)
     {
-        return $this->withSpan(__FUNCTION__, function () use ($keys, $cas_tokens, $flags) {
-            return parent::getMulti($keys, $cas_tokens, $flags);
+        return $this->withSpan(__FUNCTION__, function () use ($keys, $flags) {
+            return parent::getMulti($keys, $flags);
         });
     }
 
-    public function getMultiByKey($server_key, array $keys, &$cas_tokens = null, $flags = null)
+    public function getMultiByKey($server_key, array $keys, $flags = null)
     {
-        return $this->withSpan(__FUNCTION__, function () use ($server_key, $keys, $cas_tokens, $flags) {
-            return parent::getMultiByKey($server_key, $keys, $cas_tokens, $flags);
+        return $this->withSpan(__FUNCTION__, function () use ($server_key, $keys, $flags) {
+            return parent::getMultiByKey($server_key, $keys, $flags);
         });
     }
 
-    public function getDelayed(array $keys, $with_cas = null, callable $value_cb = null)
+    public function getDelayed(array $keys, $with_cas = null, $value_cb = null)
     {
         return $this->withSpan(__FUNCTION__, function () use ($keys, $with_cas, $value_cb) {
             return parent::getDelayed($keys, $with_cas, $value_cb);
         });
     }
 
-    public function getDelayedByKey($server_key, array $keys, $with_cas = null, callable $value_cb = null)
+    public function getDelayedByKey($server_key, array $keys, $with_cas = null, $value_cb = null)
     {
         return $this->withSpan(__FUNCTION__, function () use ($server_key, $keys, $with_cas, $value_cb) {
             return parent::getDelayedByKey($server_key, $keys, $with_cas, $value_cb);
@@ -235,21 +235,21 @@ class TracingMemcacheClient extends Memcached
         });
     }
 
-    public function deleteMulti(array $keys, $time = 0)
+    public function deleteMulti($keys, $time = null)
     {
         return $this->withSpan(__FUNCTION__, function () use ($keys, $time) {
             return parent::deleteMulti($keys, $time);
         });
     }
 
-    public function deleteByKey($server_key, $key, $time = 0)
+    public function deleteByKey($server_key, $key, $time = null)
     {
         return $this->withSpan(__FUNCTION__, function () use ($server_key, $key, $time) {
             return parent::deleteByKey($server_key, $key, $time);
         });
     }
 
-    public function deleteMultiByKey($server_key, array $keys, $time = 0)
+    public function deleteMultiByKey($server_key, $keys, $time = 0)
     {
         return $this->withSpan(__FUNCTION__, function () use ($server_key, $keys, $time) {
             return parent::deleteMultiByKey($server_key, $keys, $time);
@@ -309,10 +309,10 @@ class TracingMemcacheClient extends Memcached
         });
     }
 
-    public function getStats()
+    public function getStats($type = null)
     {
-        return $this->withSpan(__FUNCTION__, function () {
-            return parent::getStats();
+        return $this->withSpan(__FUNCTION__, function ($type) {
+            return parent::getStats($type);
         });
     }
 
