@@ -18,9 +18,6 @@ class TracingMemcacheClient extends Memcached
     /** @var Tracer */
     private $tracer;
 
-    /** @var Span */
-    private $parentSpan;
-
     /** @var Memcached */
     private $memcache;
 
@@ -29,21 +26,18 @@ class TracingMemcacheClient extends Memcached
 
     public function __construct(
         string $persistentId = null,
-        Tracer $tracer = null,
-        Span $span = null
+        Tracer $tracer = null
     )
     {
         parent::__construct($persistentId);
         $this->tracer = $tracer ?? GlobalTracer::get();
-        $this->parentSpan = $span;
     }
 
     public function withSpan(string $operationName, $callable)
     {
-        $span = $this->tracer->startSpan(
+        $span = $this->tracer->startActiveSpan(
             $this->getOperationName($operationName),
             [
-                'child_of' => $this->parentSpan,
                 'tags' => [
                     COMPONENT => 'memcached',
                     DATABASE_TYPE => 'memcache',
