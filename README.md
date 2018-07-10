@@ -6,6 +6,16 @@ This package enables distributed tracing for the PHP Memcached library.
 
 ## Getting Started
 
+```php
+<?php
+
+use OpenTracing\Memcached\TracingMemcacheClient;
+
+$client = new TracingMemcacheClient();
+
+$value = $client->get('test-key');
+```
+
 ## License
 
 [MIT License](./LICENSE).
